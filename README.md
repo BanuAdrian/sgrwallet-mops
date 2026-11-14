@@ -1,4 +1,4 @@
-# sgrwallet-mops
+# SGRWallet
 
 Spring Boot application with PostgreSQL and Flyway migrations.
 
