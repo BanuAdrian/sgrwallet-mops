@@ -1,0 +1,12 @@
+# Maven
+target/
+
+# Local configuration and secrets
+.env
+
+# IDE metadata
+.classpath
+.project
+.settings/
+.idea/
+.vscode/

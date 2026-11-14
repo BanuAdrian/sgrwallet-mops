@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: sgrwallet-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-sgrwallet}
+      POSTGRES_USER: ${POSTGRES_USER:-sgrwallet}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sgrwallet}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - sgrwallet-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  sgrwallet-postgres-data:
