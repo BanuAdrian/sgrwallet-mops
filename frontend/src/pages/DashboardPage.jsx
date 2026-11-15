@@ -31,7 +31,13 @@ function DashboardPage() {
       setVoucher({ voucherCode: '', storeName: '', amount: '', issuedAt: '', expiresAt: '' });
     } catch (err) {
       const serverMessage = err.response?.data?.message;
-      setError(serverMessage || 'Bonul nu a putut fi adaugat. Verifica conexiunea la internet si datele introduse.');
+      if (serverMessage) {
+        setError(serverMessage);
+      } else if (!err.response) {
+        setError('Serverul backend (http://localhost:8080) nu raspunde. Asigura-te ca PostgreSQL si Spring Boot sunt pornite.');
+      } else {
+        setError(`Bonul nu a putut fi adaugat (HTTP ${err.response.status}). Reporneste backend-ul Spring Boot daca rula deja.`);
+      }
     }
   };
 
