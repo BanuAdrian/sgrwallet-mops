@@ -1,27 +1,37 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../services/api';
 
 function DashboardPage() {
   const [voucher, setVoucher] = useState({
     voucherCode: '',
+    storeName: '',
     amount: '',
     issuedAt: '',
     expiresAt: ''
   });
+  const [vouchers, setVouchers] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    api.get('/vouchers')
+      .then((response) => setVouchers(response.data || []))
+      .catch(() => {});
+  }, []);
 
   const addVoucher = async (event) => {
     event.preventDefault();
     setMessage('');
     setError('');
     try {
-      await api.post('/vouchers', { ...voucher, source: 'MANUAL' });
-      setMessage('Voucher added.');
-      setVoucher({ voucherCode: '', amount: '', issuedAt: '', expiresAt: '' });
-    } catch {
-      setError('Voucher could not be added. The backend endpoint may not be implemented yet.');
+      const response = await api.post('/vouchers', { ...voucher, source: 'MANUAL' });
+      setMessage('Bonul a fost adaugat cu succes.');
+      setVouchers((prev) => [response.data, ...prev]);
+      setVoucher({ voucherCode: '', storeName: '', amount: '', issuedAt: '', expiresAt: '' });
+    } catch (err) {
+      const serverMessage = err.response?.data?.message;
+      setError(serverMessage || 'Bonul nu a putut fi adaugat. Verifica conexiunea la internet si datele introduse.');
     }
   };
 
@@ -40,7 +50,9 @@ function DashboardPage() {
           {error && <p className="error">{error}</p>}
           <label>Voucher code<input required value={voucher.voucherCode}
             onChange={(event) => setVoucher({ ...voucher, voucherCode: event.target.value })} /></label>
-          <label>Amount<input type="number" min="0" step="0.01" required value={voucher.amount}
+          <label>Store name<input required value={voucher.storeName}
+            onChange={(event) => setVoucher({ ...voucher, storeName: event.target.value })} /></label>
+          <label>Amount<input type="number" min="0.01" step="0.01" required value={voucher.amount}
             onChange={(event) => setVoucher({ ...voucher, amount: event.target.value })} /></label>
           <label>Issue date<input type="date" required value={voucher.issuedAt}
             onChange={(event) => setVoucher({ ...voucher, issuedAt: event.target.value })} /></label>
@@ -48,6 +60,20 @@ function DashboardPage() {
             onChange={(event) => setVoucher({ ...voucher, expiresAt: event.target.value })} /></label>
           <button>Add voucher</button>
         </form>
+
+        {vouchers.length > 0 && (
+          <div className="form-card" style={{ marginTop: '1.5rem' }}>
+            <h2>Saved vouchers</h2>
+            <ul>
+              {vouchers.map((item, idx) => (
+                <li key={item.id ?? idx}>
+                  <strong>{item.storeName}</strong> — {item.voucherCode} ({item.amount} RON)
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <Link to="/" className="switch-link">Back to login</Link>
       </section>
     </main>
