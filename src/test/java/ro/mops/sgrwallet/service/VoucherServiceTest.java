@@ -230,4 +230,30 @@ class VoucherServiceTest {
         assertTrue(orderEx.getMessage().toLowerCase().contains("emiterii"));
         verify(voucherRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("US-04: Returneaza lista bonurilor utilizatorului astfel incat bonul salvat sa apara in lista")
+    void shouldReturnUserVouchersAfterSaving() {
+        Long userId = 1L;
+        User user = new User("user@sgr.ro", "hashed", new Role("User"));
+        BusinessStore store = new BusinessStore("Kaufland", "RO123456");
+
+        Voucher voucher = new Voucher();
+        voucher.setVoucherCode("SGR-555666");
+        voucher.setValue(new BigDecimal("20.00"));
+        voucher.setExpiryDate(Instant.parse("2026-12-31T23:59:59Z"));
+        voucher.setUsed(false);
+        voucher.setSource(VoucherSource.MANUAL);
+        voucher.setUser(user);
+        voucher.setBusinessStore(store);
+
+        when(voucherRepository.findByUserIdOrderByAddedDateDesc(userId)).thenReturn(java.util.List.of(voucher));
+
+        java.util.List<VoucherResponse> vouchers = voucherService.getUserVouchers(userId);
+
+        assertEquals(1, vouchers.size());
+        assertEquals("SGR-555666", vouchers.get(0).voucherCode());
+        assertEquals("Kaufland", vouchers.get(0).storeName());
+        assertEquals(new BigDecimal("20.00"), vouchers.get(0).amount());
+    }
 }

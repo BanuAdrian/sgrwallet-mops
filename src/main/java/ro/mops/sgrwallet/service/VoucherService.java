@@ -73,6 +73,10 @@ public class VoucherService {
         return toResponse(saved);
     }
 
+    public List<VoucherResponse> getUserVouchers(Long userId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     private void validateMandatoryFields(ManualVoucherRequest request) {
         if (request == null) {
             throw new IllegalArgumentException("Datele bonului sunt obligatorii.");
