@@ -11,6 +11,24 @@
       "problemMatcher": []
     },
     {
+      "label": "start-ocr",
+      "type": "shell",
+      "command": "docker compose up -d ocr-service",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "start-dev-services",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "start-postgres",
+        "start-ocr"
+      ],
+      "problemMatcher": []
+    },
+    {
       "label": "start-frontend",
       "type": "shell",
       "command": "npm run dev",
@@ -29,7 +47,7 @@
           "endsPattern": "Local:.*http://localhost:5173"
         }
       },
-      "dependsOn": "start-postgres"
+      "dependsOn": "start-dev-services"
     },
     {
       "label": "run-tests",
@@ -44,7 +62,6 @@
       "label": "start-full-stack",
       "dependsOrder": "parallel",
       "dependsOn": [
-        "start-postgres",
         "start-frontend"
       ],
       "problemMatcher": []

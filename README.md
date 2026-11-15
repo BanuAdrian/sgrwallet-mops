@@ -29,15 +29,33 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. The frontend uses `VITE_API_URL` from
-`frontend/.env` and defaults to `http://localhost:8080/api`.
+`frontend/.env` and defaults to `http://localhost:8080/api`. OCR requests use
+`VITE_OCR_URL` and default to `http://localhost:8000/api`.
+
+The OCR service can be started together with PostgreSQL:
+
+```powershell
+docker compose up -d postgres ocr-service
+```
+
+It exposes `POST http://localhost:8000/api/scan-voucher`. The service uses
+Gemini Vision when `GEMINI_API_KEY` is configured, with local OpenCV/Tesseract
+and barcode decoding as a fallback. The API key must be kept only in `.env`.
 
 ## VS Code
 
 Open the project root in VS Code. Use **Run and Debug** and select
 **Debug Spring Boot + frontend** to start the frontend and debug Spring Boot.
+Use **View OCR logs** in the same list to open a live terminal with OCR logs.
 Alternatively, open **Terminal → Run Task** and select **start-full-stack**.
+This starts PostgreSQL, the local OCR service and the frontend.
 
 Flyway creates the database tables automatically when the application starts.
+
+Authentication is available through `POST /api/auth/register` and
+`POST /api/auth/login` for regular users. Registration creates an active
+`User` account, while login returns a JWT together with the user's role and
+email.
 
 No `.env` changes are required for local development. If you change the
 password, update both `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value.

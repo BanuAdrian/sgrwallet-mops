@@ -11,6 +11,13 @@
             "args": "",
             "envFile": "${workspaceFolder}/.env",
             "preLaunchTask": "start-frontend"
+        },
+        {
+            "type": "node-terminal",
+            "name": "View OCR logs",
+            "request": "launch",
+            "command": "docker compose logs -f ocr-service",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

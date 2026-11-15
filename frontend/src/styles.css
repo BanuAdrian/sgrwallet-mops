@@ -30,3 +30,4 @@ input:focus { outline: 2px solid #82c9a9; border-color: #087f5b; }
 .secondary { padding: 0.55rem 0.8rem; color: #087f5b; background: #e5f4ec; }
 .content { width: min(100% - 3rem, 42rem); margin: 3rem auto; }
 .voucher-form { max-width: 34rem; }
+.voucher-form h2 { margin: 0; font-size: 1.25rem; }
