@@ -44,20 +44,14 @@ public class VoucherService {
     }
 
     public VoucherResponse addManualVoucher(Long userId, ManualVoucherRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
-
-        BusinessStore store = businessStoreRepository.findByNameIgnoreCase(request.storeName())
-                .orElseGet(() -> businessStoreRepository.save(
-                        new BusinessStore(request.storeName(), "REG-" + UUID.randomUUID().toString().substring(0, 8))
-                ));
-
-        Instant expiryInstant = LocalDate.parse(request.expiresAt())
+        User user = findUserOrThrow(userId);
+        BusinessStore store = findOrCreateStore(request.storeName().trim());
+        Instant expiryInstant = LocalDate.parse(request.expiresAt().trim())
                 .atTime(23, 59, 59)
                 .toInstant(ZoneOffset.UTC);
 
         Voucher voucher = new Voucher();
-        voucher.setVoucherCode(request.voucherCode());
+        voucher.setVoucherCode(request.voucherCode().trim());
         voucher.setValue(request.amount());
         voucher.setExpiryDate(expiryInstant);
         voucher.setUsed(false);
@@ -66,16 +60,31 @@ public class VoucherService {
         voucher.setBusinessStore(store);
 
         Voucher saved = voucherRepository.save(voucher);
+        return toResponse(saved);
+    }
 
+    private User findUserOrThrow(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Utilizatorul nu a fost gasit."));
+    }
+
+    private BusinessStore findOrCreateStore(String storeName) {
+        return businessStoreRepository.findByNameIgnoreCase(storeName)
+                .orElseGet(() -> businessStoreRepository.save(
+                        new BusinessStore(storeName, "REG-" + UUID.randomUUID().toString().substring(0, 8))
+                ));
+    }
+
+    private VoucherResponse toResponse(Voucher voucher) {
         return new VoucherResponse(
-                saved.getId(),
-                saved.getVoucherCode(),
-                saved.getBusinessStore().getName(),
-                saved.getValue(),
-                saved.getExpiryDate(),
-                saved.getAddedDate(),
-                saved.isUsed(),
-                saved.getSource()
+                voucher.getId(),
+                voucher.getVoucherCode(),
+                voucher.getBusinessStore().getName(),
+                voucher.getValue(),
+                voucher.getExpiryDate(),
+                voucher.getAddedDate(),
+                voucher.isUsed(),
+                voucher.getSource()
         );
     }
 }
