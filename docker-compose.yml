@@ -17,5 +17,16 @@ services:
       timeout: 5s
       retries: 10
 
+  ocr-service:
+    build:
+      context: ./ocr-service
+    container_name: sgrwallet-ocr
+    restart: unless-stopped
+    environment:
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      OCR_VISION_MODEL: ${OCR_VISION_MODEL:-gemini-2.5-flash}
+    ports:
+      - "${OCR_PORT:-8000}:8000"
+
 volumes:
   sgrwallet-postgres-data:

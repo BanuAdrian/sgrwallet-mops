@@ -11,6 +11,49 @@ function DashboardPage() {
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [image, setImage] = useState(null);
+  const [scanning, setScanning] = useState(false);
+  const [scanPreview, setScanPreview] = useState(null);
+
+  const scanVoucher = async () => {
+    if (!image) {
+      setError('Select a voucher image first.');
+      return;
+    }
+
+    setError('');
+    setMessage('');
+    setScanning(true);
+    const formData = new FormData();
+    formData.append('file', image);
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_OCR_URL || 'http://localhost:8000/api'}/scan-voucher`,
+        { method: 'POST', body: formData, signal: controller.signal }
+      );
+      if (!response.ok) {
+        throw new Error('OCR request failed');
+      }
+      const data = await response.json();
+      setScanPreview(data);
+      setVoucher({
+        voucherCode: data.barcode_number || '',
+        amount: data.voucher_value ?? '',
+        issuedAt: data.print_date || '',
+        expiresAt: ''
+      });
+    } catch (scanError) {
+      setError(scanError.name === 'AbortError'
+        ? 'OCR scan timed out. Check the OCR logs or try a clearer image.'
+        : 'OCR scan failed. Check that the OCR service is running.');
+    } finally {
+      clearTimeout(timeout);
+      setScanning(false);
+    }
+  };
 
   const addVoucher = async (event) => {
     event.preventDefault();
@@ -48,6 +91,16 @@ function DashboardPage() {
             onChange={(event) => setVoucher({ ...voucher, expiresAt: event.target.value })} /></label>
           <button>Add voucher</button>
         </form>
+        <section className="form-card voucher-form">
+          <h2>Scan voucher image</h2>
+          <p className="muted">OCR fills the fields below. Review and correct them before saving.</p>
+          <input type="file" accept="image/*" capture="environment"
+            onChange={(event) => setImage(event.target.files?.[0] || null)} />
+          <button type="button" onClick={scanVoucher} disabled={scanning}>
+            {scanning ? 'Scanning...' : 'Scan with OCR'}
+          </button>
+          {scanPreview && <p className="success">Review the extracted values, then add the voucher.</p>}
+        </section>
         <Link to="/" className="switch-link">Back to login</Link>
       </section>
     </main>
