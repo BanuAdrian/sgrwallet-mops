@@ -147,4 +147,87 @@ class VoucherServiceTest {
         assertTrue(negativeEx.getMessage().toLowerCase().contains("suma"));
         verify(voucherRepository, never()).save(any());
     }
+
+    @Test
+    @DisplayName("US-04: Respinge bonul cand data expirarii lipseste sau este o data calendaristica inexistenta (ex. 2026-02-30)")
+    void shouldRejectVoucherWhenExpiryDateIsMissingOrInvalidCalendarDate() {
+        ManualVoucherRequest blankDateRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Lidl",
+                new BigDecimal("10.00"),
+                "2026-03-10",
+                "   "
+        );
+        ManualVoucherRequest impossibleDateRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Lidl",
+                new BigDecimal("10.00"),
+                "2026-03-10",
+                "2026-02-30"
+        );
+
+        IllegalArgumentException blankEx = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, blankDateRequest)
+        );
+        assertTrue(blankEx.getMessage().toLowerCase().contains("expir"));
+
+        IllegalArgumentException invalidCalEx = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, impossibleDateRequest)
+        );
+        assertTrue(invalidCalEx.getMessage().toLowerCase().contains("calendaristic"));
+        verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-04: Respinge bonul cand data expirarii este in trecut")
+    void shouldRejectVoucherWhenExpiryDateIsInThePast() {
+        ManualVoucherRequest expiredRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Mega Image",
+                new BigDecimal("12.00"),
+                "2026-02-01",
+                "2026-03-01"
+        );
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, expiredRequest)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("trecut") || ex.getMessage().toLowerCase().contains("expirat"));
+        verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-04: Respinge bonul cand data emiterii este invalida calendaristic (2026-02-29) sau dupa data expirarii")
+    void shouldRejectVoucherWhenIssuedDateIsInvalidOrAfterExpiryDate() {
+        ManualVoucherRequest nonLeapYearRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Carrefour",
+                new BigDecimal("8.50"),
+                "2026-02-29",
+                "2026-12-31"
+        );
+        ManualVoucherRequest issuedAfterExpiryRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Carrefour",
+                new BigDecimal("8.50"),
+                "2026-06-15",
+                "2026-05-01"
+        );
+
+        IllegalArgumentException leapEx = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, nonLeapYearRequest)
+        );
+        assertTrue(leapEx.getMessage().toLowerCase().contains("calendaristic"));
+
+        IllegalArgumentException orderEx = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, issuedAfterExpiryRequest)
+        );
+        assertTrue(orderEx.getMessage().toLowerCase().contains("emiterii"));
+        verify(voucherRepository, never()).save(any());
+    }
 }
