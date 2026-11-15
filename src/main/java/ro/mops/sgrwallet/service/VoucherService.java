@@ -74,7 +74,10 @@ public class VoucherService {
     }
 
     public List<VoucherResponse> getUserVouchers(Long userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return voucherRepository.findByUserIdOrderByAddedDateDesc(userId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     private void validateMandatoryFields(ManualVoucherRequest request) {

@@ -1,5 +1,6 @@
 package ro.mops.sgrwallet.controller;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
@@ -23,12 +24,13 @@ public class VoucherController {
     public ResponseEntity<VoucherResponse> addManualVoucher(
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId,
             @RequestBody ManualVoucherRequest request) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        VoucherResponse created = voucherService.addManualVoucher(userId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     @GetMapping
     public ResponseEntity<List<VoucherResponse>> getUserVouchers(
             @RequestHeader(value = "X-User-Id", defaultValue = "1") Long userId) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return ResponseEntity.ok(voucherService.getUserVouchers(userId));
     }
 }
