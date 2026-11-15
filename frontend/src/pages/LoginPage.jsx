@@ -15,12 +15,12 @@ function LoginPage() {
 
     try {
       const { data } = await api.post('/auth/login', form);
-      if (data.token) {
-        localStorage.setItem('sgr_token', data.token);
-      }
+      localStorage.setItem('sgr_token', data.token);
+      localStorage.setItem('sgr_role', data.role);
+      localStorage.setItem('sgr_email', data.email);
       navigate('/dashboard');
-    } catch {
-      setError('Login failed. Check the API and your credentials.');
+    } catch (error) {
+      setError(error.response?.data?.message || 'Email sau parolă incorectă.');
     } finally {
       setLoading(false);
     }
