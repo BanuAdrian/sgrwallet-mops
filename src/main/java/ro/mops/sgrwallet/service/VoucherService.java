@@ -12,6 +12,7 @@ import ro.mops.sgrwallet.repository.BusinessStoreRepository;
 import ro.mops.sgrwallet.repository.UserRepository;
 import ro.mops.sgrwallet.repository.VoucherRepository;
 
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -44,6 +45,19 @@ public class VoucherService {
     }
 
     public VoucherResponse addManualVoucher(Long userId, ManualVoucherRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Datele bonului sunt obligatorii.");
+        }
+        if (request.voucherCode() == null || request.voucherCode().isBlank()) {
+            throw new IllegalArgumentException("Codul bonului este obligatoriu.");
+        }
+        if (request.storeName() == null || request.storeName().isBlank()) {
+            throw new IllegalArgumentException("Numele magazinului este obligatoriu.");
+        }
+        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Suma bonului trebuie sa fie mai mare decat 0.");
+        }
+
         User user = findUserOrThrow(userId);
         BusinessStore store = findOrCreateStore(request.storeName().trim());
         Instant expiryInstant = LocalDate.parse(request.expiresAt().trim())
