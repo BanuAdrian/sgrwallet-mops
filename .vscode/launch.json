@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug Spring Boot + frontend",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "ro.mops.sgrwallet.SgrWalletApplication",
+            "projectName": "sgrwallet-mops",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env",
+            "preLaunchTask": "start-frontend"
+        }
+    ]
+}
