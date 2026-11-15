@@ -45,18 +45,7 @@ public class VoucherService {
     }
 
     public VoucherResponse addManualVoucher(Long userId, ManualVoucherRequest request) {
-        if (request == null) {
-            throw new IllegalArgumentException("Datele bonului sunt obligatorii.");
-        }
-        if (request.voucherCode() == null || request.voucherCode().isBlank()) {
-            throw new IllegalArgumentException("Codul bonului este obligatoriu.");
-        }
-        if (request.storeName() == null || request.storeName().isBlank()) {
-            throw new IllegalArgumentException("Numele magazinului este obligatoriu.");
-        }
-        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Suma bonului trebuie sa fie mai mare decat 0.");
-        }
+        validateMandatoryFields(request);
 
         User user = findUserOrThrow(userId);
         BusinessStore store = findOrCreateStore(request.storeName().trim());
@@ -75,6 +64,21 @@ public class VoucherService {
 
         Voucher saved = voucherRepository.save(voucher);
         return toResponse(saved);
+    }
+
+    private void validateMandatoryFields(ManualVoucherRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Datele bonului sunt obligatorii.");
+        }
+        if (request.voucherCode() == null || request.voucherCode().isBlank()) {
+            throw new IllegalArgumentException("Codul bonului este obligatoriu.");
+        }
+        if (request.storeName() == null || request.storeName().isBlank()) {
+            throw new IllegalArgumentException("Numele magazinului este obligatoriu.");
+        }
+        if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Suma bonului trebuie sa fie mai mare decat 0.");
+        }
     }
 
     private User findUserOrThrow(Long userId) {
