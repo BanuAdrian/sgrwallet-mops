@@ -20,13 +20,16 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
+import java.util.List;
 import java.util.UUID;
 
 @Service
 public class VoucherService {
 
-    private static final DateTimeFormatter STRICT_ISO_DATE = DateTimeFormatter.ofPattern("uuuu-MM-dd")
-            .withResolverStyle(ResolverStyle.STRICT);
+    private static final List<DateTimeFormatter> STRICT_DATE_FORMATTERS = List.of(
+            DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT),
+            DateTimeFormatter.ofPattern("dd-MM-uuuu").withResolverStyle(ResolverStyle.STRICT)
+    );
 
     private final VoucherRepository voucherRepository;
     private final BusinessStoreRepository businessStoreRepository;
@@ -52,41 +55,10 @@ public class VoucherService {
 
     public VoucherResponse addManualVoucher(Long userId, ManualVoucherRequest request) {
         validateMandatoryFields(request);
-
-        if (request.expiresAt() == null || request.expiresAt().isBlank()) {
-            throw new IllegalArgumentException("Data expirarii este obligatorie.");
-        }
-
-        LocalDate expiryDate;
-        try {
-            expiryDate = LocalDate.parse(request.expiresAt().trim(), STRICT_ISO_DATE);
-        } catch (DateTimeParseException ex) {
-            throw new IllegalArgumentException("Data expirarii nu este o data calendaristica valida.");
-        }
-
-        LocalDate today = LocalDate.now(clock);
-        if (expiryDate.isBefore(today)) {
-            throw new IllegalArgumentException("Data expirarii nu poate fi in trecut (bon expirat).");
-        }
-
-        if (request.issuedAt() != null && !request.issuedAt().isBlank()) {
-            LocalDate issuedDate;
-            try {
-                issuedDate = LocalDate.parse(request.issuedAt().trim(), STRICT_ISO_DATE);
-            } catch (DateTimeParseException ex) {
-                throw new IllegalArgumentException("Data emiterii nu este o data calendaristica valida.");
-            }
-            if (issuedDate.isAfter(expiryDate)) {
-                throw new IllegalArgumentException("Data emiterii nu poate fi dupa data expirarii.");
-            }
-            if (issuedDate.isAfter(today)) {
-                throw new IllegalArgumentException("Data emiterii nu poate fi in viitor.");
-            }
-        }
+        Instant expiryInstant = parseAndValidateDates(request);
 
         User user = findUserOrThrow(userId);
         BusinessStore store = findOrCreateStore(request.storeName().trim());
-        Instant expiryInstant = expiryDate.atTime(23, 59, 59).toInstant(ZoneOffset.UTC);
 
         Voucher voucher = new Voucher();
         voucher.setVoucherCode(request.voucherCode().trim());
@@ -114,6 +86,40 @@ public class VoucherService {
         if (request.amount() == null || request.amount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Suma bonului trebuie sa fie mai mare decat 0.");
         }
+        if (request.expiresAt() == null || request.expiresAt().isBlank()) {
+            throw new IllegalArgumentException("Data expirarii este obligatorie.");
+        }
+    }
+
+    private Instant parseAndValidateDates(ManualVoucherRequest request) {
+        LocalDate expiryDate = parseStrictCalendarDate(request.expiresAt().trim(), "Data expirarii");
+        LocalDate today = LocalDate.now(clock);
+
+        if (expiryDate.isBefore(today)) {
+            throw new IllegalArgumentException("Data expirarii nu poate fi in trecut (bon expirat).");
+        }
+
+        if (request.issuedAt() != null && !request.issuedAt().isBlank()) {
+            LocalDate issuedDate = parseStrictCalendarDate(request.issuedAt().trim(), "Data emiterii");
+            if (issuedDate.isAfter(expiryDate)) {
+                throw new IllegalArgumentException("Data emiterii nu poate fi dupa data expirarii.");
+            }
+            if (issuedDate.isAfter(today)) {
+                throw new IllegalArgumentException("Data emiterii nu poate fi in viitor.");
+            }
+        }
+
+        return expiryDate.atTime(23, 59, 59).toInstant(ZoneOffset.UTC);
+    }
+
+    private LocalDate parseStrictCalendarDate(String rawDate, String fieldLabel) {
+        for (DateTimeFormatter formatter : STRICT_DATE_FORMATTERS) {
+            try {
+                return LocalDate.parse(rawDate, formatter);
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        throw new IllegalArgumentException(fieldLabel + " nu este o data calendaristica valida.");
     }
 
     private User findUserOrThrow(Long userId) {
