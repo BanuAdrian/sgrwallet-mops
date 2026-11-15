@@ -3,7 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function RegisterPage() {
-  const [form, setForm] = useState({ email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({
+    email: '', password: '', confirmPassword: ''
+  });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -12,20 +14,18 @@ function RegisterPage() {
     event.preventDefault();
     setError('');
     if (form.password !== form.confirmPassword) {
-      setError('Passwords do not match.');
+      setError('Parolele nu coincid.');
       return;
     }
-
     setLoading(true);
     try {
       await api.post('/auth/register', {
         email: form.email,
-        password: form.password,
-        role: 'USER'
+        password: form.password
       });
-      navigate('/');
-    } catch {
-      setError('Registration failed. Check the API response.');
+      navigate('/', { state: { registered: true } });
+    } catch (error) {
+      setError(error.response?.data?.message || 'Înregistrarea a eșuat. Încearcă din nou.');
     } finally {
       setLoading(false);
     }

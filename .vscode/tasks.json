@@ -1,53 +1,200 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "start-postgres",
-      "type": "shell",
-      "command": "docker compose up -d postgres",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "start-frontend",
-      "type": "shell",
-      "command": "npm run dev",
-      "options": {
-        "cwd": "${workspaceFolder}/frontend"
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "owner": "frontend",
-        "pattern": {
-          "regexp": "."
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": ".",
-          "endsPattern": "Local:.*http://localhost:5173"
-        }
-      },
-      "dependsOn": "start-postgres"
-    },
-    {
-      "label": "run-tests",
-      "type": "shell",
-      "command": "mvn test",
-      "options": {
-        "cwd": "${workspaceFolder}"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "start-full-stack",
-      "dependsOrder": "parallel",
-      "dependsOn": [
-        "start-postgres",
-        "start-frontend"
-      ],
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "start-postgres",
+			"type": "shell",
+			"command": "docker compose up -d postgres",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "start-frontend",
+			"type": "shell",
+			"command": "npm run dev",
+			"options": {
+				"cwd": "${workspaceFolder}/frontend"
+			},
+			"isBackground": true,
+			"problemMatcher": {
+				"owner": "frontend",
+				"pattern": {
+					"regexp": "."
+				},
+				"background": {
+					"activeOnStart": true,
+					"beginsPattern": ".",
+					"endsPattern": "Local:.*http://localhost:5173"
+				}
+			},
+			"dependsOn": "start-postgres"
+		},
+		{
+			"label": "run-tests",
+			"type": "shell",
+			"command": "mvn test",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "start-full-stack",
+			"dependsOrder": "parallel",
+			"dependsOn": [
+				"start-postgres",
+				"start-frontend"
+			],
+			"problemMatcher": []
+		},
+		{
+			"label": "install-maven",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"install",
+				"Apache.Maven",
+				"-e",
+				"--accept-source-agreements",
+				"--accept-package-agreements"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "find-maven-package",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"search",
+				"maven"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "install-maven-and-test",
+			"type": "shell",
+			"command": "$mavenHome = Join-Path $env:USERPROFILE '.maven\\apache-maven-3.9.9'; if (-not (Test-Path $mavenHome)) { $zip = Join-Path $env:TEMP 'apache-maven-3.9.9-bin.zip'; Invoke-WebRequest -Uri 'https://dlcdn.apache.org/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip' -OutFile $zip; Expand-Archive -Path $zip -DestinationPath (Join-Path $env:USERPROFILE '.maven') -Force }; & (Join-Path $mavenHome 'bin\\mvn.cmd') test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "download-maven-and-test",
+			"type": "shell",
+			"command": "$mavenHome = Join-Path $env:USERPROFILE '.maven\\apache-maven-3.10.1'; if (-not (Test-Path $mavenHome)) { $zip = Join-Path $env:TEMP 'apache-maven-3.10.1-bin.zip'; Invoke-WebRequest -Uri 'https://dlcdn.apache.org/maven/maven-3/3.10.1/binaries/apache-maven-3.10.1-bin.zip' -OutFile $zip; Expand-Archive -Path $zip -DestinationPath (Join-Path $env:USERPROFILE '.maven') -Force }; & (Join-Path $mavenHome 'bin\\mvn.cmd') test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "find-java17",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"search",
+				"Eclipse Temurin 17"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "find-java",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"search",
+				"Java",
+				"--source",
+				"winget"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "install-java17",
+			"type": "shell",
+			"command": "winget",
+			"args": [
+				"install",
+				"EclipseAdoptium.Temurin.17.JDK",
+				"-e",
+				"--accept-source-agreements",
+				"--accept-package-agreements"
+			],
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "run-backend-tests",
+			"type": "shell",
+			"command": "$mavenHome = Join-Path $env:USERPROFILE '.maven\\apache-maven-3.10.1'; & (Join-Path $mavenHome 'bin\\mvn.cmd') test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "locate-java17",
+			"type": "shell",
+			"command": "Get-ChildItem 'C:\\Program Files\\Eclipse Adoptium' -Directory | Select-Object -ExpandProperty FullName",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "run-backend-tests-java17",
+			"type": "shell",
+			"command": "$env:JAVA_HOME = 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.21.9-hotspot'; $env:Path = \"$env:JAVA_HOME\\bin;$env:Path\"; $mavenHome = Join-Path $env:USERPROFILE '.maven\\apache-maven-3.10.1'; & (Join-Path $mavenHome 'bin\\mvn.cmd') test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "run-backend-tests-java17-fixed",
+			"type": "shell",
+			"command": "$env:JAVA_HOME = 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.21.9-hotspot'; $env:Path = (Join-Path $env:JAVA_HOME 'bin') + ';' + $env:Path; $mavenHome = Join-Path $env:USERPROFILE '.maven\\apache-maven-3.10.1'; & (Join-Path $mavenHome 'bin\\mvn.cmd') test",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "start-backend-java17",
+			"type": "shell",
+			"command": "$env:JAVA_HOME = 'C:\\Program Files\\Eclipse Adoptium\\jdk-17.0.21.9-hotspot'; $env:Path = (Join-Path $env:JAVA_HOME 'bin') + ';' + $env:Path; $mavenHome = Join-Path $env:USERPROFILE '.maven\\apache-maven-3.10.1'; & (Join-Path $mavenHome 'bin\\mvn.cmd') spring-boot:run",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "test-auth-endpoints",
+			"type": "shell",
+			"command": "$email = 'auth-test-' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + '@example.com'; $body = @{ email = $email; password = 'parola123' } | ConvertTo-Json; $register = Invoke-WebRequest -Method Post -Uri 'http://localhost:8080/api/auth/register' -ContentType 'application/json' -Body $body; $login = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/api/auth/login' -ContentType 'application/json' -Body $body; $duplicateStatus = 0; try { Invoke-WebRequest -Method Post -Uri 'http://localhost:8080/api/auth/register' -ContentType 'application/json' -Body $body | Out-Null } catch { $duplicateStatus = [int]$_.Exception.Response.StatusCode }; $wrongBody = @{ email = $email; password = 'parola-gresita' } | ConvertTo-Json; $wrongStatus = 0; try { Invoke-WebRequest -Method Post -Uri 'http://localhost:8080/api/auth/login' -ContentType 'application/json' -Body $wrongBody | Out-Null } catch { $wrongStatus = [int]$_.Exception.Response.StatusCode }; Write-Output ('REGISTER_STATUS=' + [int]$register.StatusCode); Write-Output ('LOGIN_ROLE=' + $login.role); Write-Output ('LOGIN_EMAIL=' + $login.email); Write-Output ('DUPLICATE_REGISTER_STATUS=' + $duplicateStatus); Write-Output ('WRONG_PASSWORD_STATUS=' + $wrongStatus)",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "test-auth-endpoints-basic",
+			"type": "shell",
+			"command": "$email = 'auth-test-' + [DateTimeOffset]::UtcNow.ToUnixTimeSeconds() + '@example.com'; $body = @{ email = $email; password = 'parola123' } | ConvertTo-Json; $register = Invoke-WebRequest -UseBasicParsing -Method Post -Uri 'http://localhost:8080/api/auth/register' -ContentType 'application/json' -Body $body; $login = Invoke-RestMethod -Method Post -Uri 'http://localhost:8080/api/auth/login' -ContentType 'application/json' -Body $body; $duplicateStatus = 0; try { Invoke-WebRequest -UseBasicParsing -Method Post -Uri 'http://localhost:8080/api/auth/register' -ContentType 'application/json' -Body $body | Out-Null } catch { $duplicateStatus = [int]$_.Exception.Response.StatusCode }; $wrongBody = @{ email = $email; password = 'parola-gresita' } | ConvertTo-Json; $wrongStatus = 0; try { Invoke-WebRequest -UseBasicParsing -Method Post -Uri 'http://localhost:8080/api/auth/login' -ContentType 'application/json' -Body $wrongBody | Out-Null } catch { $wrongStatus = [int]$_.Exception.Response.StatusCode }; Write-Output ('REGISTER_STATUS=' + [int]$register.StatusCode); Write-Output ('LOGIN_ROLE=' + $login.role); Write-Output ('LOGIN_EMAIL=' + $login.email); Write-Output ('DUPLICATE_REGISTER_STATUS=' + $duplicateStatus); Write-Output ('WRONG_PASSWORD_STATUS=' + $wrongStatus)",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "install-and-build-frontend",
+			"type": "shell",
+			"command": "Set-Location frontend; npm install; if ($LASTEXITCODE -eq 0) { npm run build }",
+			"isBackground": false,
+			"problemMatcher": []
+		},
+		{
+			"label": "start-frontend-dev",
+			"type": "shell",
+			"command": "Set-Location frontend; npm run dev -- --host localhost",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "verify-local-apps",
+			"type": "shell",
+			"command": "$backend = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:8080' -ErrorAction SilentlyContinue; $frontend5173 = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:5173' -ErrorAction SilentlyContinue; $frontend5174 = Invoke-WebRequest -UseBasicParsing -Uri 'http://localhost:5174' -ErrorAction SilentlyContinue; Write-Output ('BACKEND_STATUS=' + [int]$backend.StatusCode); Write-Output ('FRONTEND_5173_STATUS=' + [int]$frontend5173.StatusCode); Write-Output ('FRONTEND_5174_STATUS=' + [int]$frontend5174.StatusCode)",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
 }
