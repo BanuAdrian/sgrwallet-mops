@@ -77,4 +77,74 @@ class VoucherServiceTest {
         assertFalse(response.used());
         verify(voucherRepository, times(1)).save(any(Voucher.class));
     }
+
+    @Test
+    @DisplayName("US-04: Respinge bonul cand codul bonului este gol sau null")
+    void shouldRejectVoucherWhenCodeIsBlank() {
+        ManualVoucherRequest request = new ManualVoucherRequest(
+                "   ",
+                "Kaufland",
+                new BigDecimal("10.00"),
+                "2026-03-10",
+                "2026-12-31"
+        );
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, request)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("codul bonului"));
+        verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-04: Respinge bonul cand numele magazinului este gol sau null")
+    void shouldRejectVoucherWhenStoreNameIsBlank() {
+        ManualVoucherRequest request = new ManualVoucherRequest(
+                "SGR-111222",
+                "",
+                new BigDecimal("10.00"),
+                "2026-03-10",
+                "2026-12-31"
+        );
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, request)
+        );
+        assertTrue(ex.getMessage().toLowerCase().contains("magazin"));
+        verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-04: Respinge bonul cand suma este zero, negativa sau null")
+    void shouldRejectVoucherWhenAmountIsNullOrNonPositive() {
+        ManualVoucherRequest zeroAmountRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Lidl",
+                BigDecimal.ZERO,
+                "2026-03-10",
+                "2026-12-31"
+        );
+        ManualVoucherRequest negativeAmountRequest = new ManualVoucherRequest(
+                "SGR-111222",
+                "Lidl",
+                new BigDecimal("-5.00"),
+                "2026-03-10",
+                "2026-12-31"
+        );
+
+        IllegalArgumentException zeroEx = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, zeroAmountRequest)
+        );
+        assertTrue(zeroEx.getMessage().toLowerCase().contains("suma"));
+
+        IllegalArgumentException negativeEx = assertThrows(
+                IllegalArgumentException.class,
+                () -> voucherService.addManualVoucher(1L, negativeAmountRequest)
+        );
+        assertTrue(negativeEx.getMessage().toLowerCase().contains("suma"));
+        verify(voucherRepository, never()).save(any());
+    }
 }
