@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function calculateExpiryDate(issueDate) {
@@ -69,6 +69,13 @@ function DashboardPage() {
       clearTimeout(timeout);
       setScanning(false);
     }
+  const navigate = useNavigate();
+
+  const signOut = () => {
+    localStorage.removeItem('sgr_token');
+    localStorage.removeItem('sgr_role');
+    localStorage.removeItem('sgr_email');
+    navigate('/', { replace: true });
   };
 
   const addVoucher = async (event) => {
@@ -89,7 +96,7 @@ function DashboardPage() {
     <main className="page">
       <header className="topbar">
         <strong>SGRWallet</strong>
-        <button className="secondary" onClick={() => localStorage.removeItem('sgr_token')}>Sign out</button>
+        <button className="secondary" onClick={signOut}>Sign out</button>
       </header>
       <section className="content">
         <p className="eyebrow">Voucher wallet</p>

@@ -1,4 +1,4 @@
-# sgrwallet-mops
+# SGRWallet
 
 Spring Boot application with PostgreSQL and Flyway migrations.
 
@@ -51,6 +51,11 @@ Alternatively, open **Terminal → Run Task** and select **start-full-stack**.
 This starts PostgreSQL, the local OCR service and the frontend.
 
 Flyway creates the database tables automatically when the application starts.
+
+Authentication is available through `POST /api/auth/register` and
+`POST /api/auth/login` for regular users. Registration creates an active
+`User` account, while login returns a JWT together with the user's role and
+email.
 
 No `.env` changes are required for local development. If you change the
 password, update both `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value.
