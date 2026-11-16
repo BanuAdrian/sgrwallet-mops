@@ -50,6 +50,13 @@ Use **View OCR logs** in the same list to open a live terminal with OCR logs.
 Alternatively, open **Terminal → Run Task** and select **start-full-stack**.
 This starts PostgreSQL, the local OCR service and the frontend.
 
+The test tasks are also available from **Terminal → Run Task**:
+
+- `run-all-tests` runs Java, frontend and OCR tests;
+- `run-backend-coverage` generates `target/site/jacoco/index.html`;
+- `run-frontend-coverage` generates `frontend/coverage/index.html`;
+- `run-ocr-coverage` generates `ocr-service/htmlcov/index.html`.
+
 Flyway creates the database tables automatically when the application starts.
 
 Authentication is available through `POST /api/auth/register` and

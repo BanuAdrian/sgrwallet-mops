@@ -69,6 +69,88 @@
       "problemMatcher": []
     },
     {
+      "label": "run-backend-coverage",
+      "type": "shell",
+      "command": "mvn verify",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-frontend-tests",
+      "type": "shell",
+      "command": "npm test",
+      "options": {
+        "cwd": "${workspaceFolder}\\frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-frontend-coverage",
+      "type": "shell",
+      "command": "npm run test:coverage",
+      "options": {
+        "cwd": "${workspaceFolder}\\frontend"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-ocr-tests",
+      "type": "shell",
+      "command": "python -m pytest -q",
+      "options": {
+        "cwd": "${workspaceFolder}\\ocr-service"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-ocr-coverage",
+      "type": "shell",
+      "command": "python -m pytest --cov=app --cov-report=term-missing --cov-report=html",
+      "options": {
+        "cwd": "${workspaceFolder}\\ocr-service"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-all-coverage-and-open-reports",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\run-all-coverage.ps1\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "open-coverage-reports",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\open-coverage-reports.ps1\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-all-tests-and-open-report",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\run-all-tests-report.ps1\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "run-all-tests",
+      "dependsOrder": "parallel",
+      "dependsOn": [
+        "run-tests",
+        "run-frontend-tests",
+        "run-ocr-tests"
+      ],
+      "problemMatcher": []
+    },
+    {
       "label": "start-full-stack",
       "dependsOrder": "parallel",
       "dependsOn": [
