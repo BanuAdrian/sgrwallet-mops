@@ -47,6 +47,19 @@ public class VoucherController {
         return ResponseEntity.ok(voucherService.getUserVouchers(userId));
     }
 
+    @PatchMapping("/{voucherId}/used")
+    public ResponseEntity<VoucherResponse> markVoucherUsed(
+            Authentication authentication,
+            @RequestHeader(value = "X-User-Id", defaultValue = "1") Long fallbackUserId,
+            @PathVariable("voucherId") Long voucherId) {
+        Long userId = resolveUserId(authentication, fallbackUserId);
+        return markVoucherUsed(userId, voucherId);
+    }
+
+    public ResponseEntity<VoucherResponse> markVoucherUsed(Long userId, Long voucherId) {
+        return ResponseEntity.ok(voucherService.markVoucherUsed(userId, voucherId));
+    }
+
     private Long resolveUserId(Authentication authentication, Long fallbackUserId) {
         if (authentication != null && authentication.getName() != null) {
             try {
