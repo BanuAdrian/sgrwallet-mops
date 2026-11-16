@@ -57,6 +57,10 @@ Authentication is available through `POST /api/auth/register` and
 `User` account, while login returns a JWT together with the user's role and
 email.
 
+The dashboard displays each voucher's scannable barcode and available balance.
+Marking a voucher as used updates its status and removes its value from the
+available balance; a used voucher cannot be marked a second time.
+
 No `.env` changes are required for local development. If you change the
 password, update both `POSTGRES_PASSWORD` and `DB_PASSWORD` to the same value.
 For a completely new database after changing credentials:

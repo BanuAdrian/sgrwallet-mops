@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
 import ro.mops.sgrwallet.dto.VoucherResponse;
 import ro.mops.sgrwallet.model.BusinessStore;
@@ -255,5 +257,61 @@ class VoucherServiceTest {
         assertEquals("SGR-555666", vouchers.get(0).voucherCode());
         assertEquals("Kaufland", vouchers.get(0).storeName());
         assertEquals(new BigDecimal("20.00"), vouchers.get(0).amount());
+    }
+
+    @Test
+    @DisplayName("US-08: Marcheaza bonul ca folosit si inregistreaza momentul folosirii")
+    void shouldMarkVoucherUsedAndSetUsedDate() {
+        Voucher voucher = createVoucher(false);
+        when(voucherRepository.findByIdAndUserIdForUpdate(10L, 1L)).thenReturn(Optional.of(voucher));
+        when(voucherRepository.save(voucher)).thenReturn(voucher);
+
+        VoucherResponse response = voucherService.markVoucherUsed(1L, 10L);
+
+        assertTrue(response.used());
+        assertEquals(fixedClock.instant(), voucher.getUsedDate());
+        verify(voucherRepository).save(voucher);
+    }
+
+    @Test
+    @DisplayName("US-08: Nu permite folosirea repetata a aceluiasi bon")
+    void shouldRejectVoucherThatIsAlreadyUsed() {
+        Voucher voucher = createVoucher(true);
+        when(voucherRepository.findByIdAndUserIdForUpdate(10L, 1L)).thenReturn(Optional.of(voucher));
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> voucherService.markVoucherUsed(1L, 10L)
+        );
+
+        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
+        verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-08: Nu expune bonul altui utilizator")
+    void shouldRejectVoucherNotOwnedByUser() {
+        when(voucherRepository.findByIdAndUserIdForUpdate(10L, 2L)).thenReturn(Optional.empty());
+
+        ResponseStatusException exception = assertThrows(
+                ResponseStatusException.class,
+                () -> voucherService.markVoucherUsed(2L, 10L)
+        );
+
+        assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
+        verify(voucherRepository, never()).save(any());
+    }
+
+    private Voucher createVoucher(boolean used) {
+        Voucher voucher = new Voucher();
+        voucher.setVoucherCode("SGR-123456");
+        voucher.setValue(new BigDecimal("12.50"));
+        voucher.setExpiryDate(Instant.parse("2026-12-31T23:59:59Z"));
+        voucher.setUsed(used);
+        voucher.setUsedDate(used ? fixedClock.instant() : null);
+        voucher.setSource(VoucherSource.MANUAL);
+        voucher.setUser(new User("user@sgr.ro", "hashed", new Role("User")));
+        voucher.setBusinessStore(new BusinessStore("Lidl", "RO123456"));
+        return voucher;
     }
 }

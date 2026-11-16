@@ -31,3 +31,18 @@ input:focus { outline: 2px solid #82c9a9; border-color: #087f5b; }
 .content { width: min(100% - 3rem, 42rem); margin: 3rem auto; }
 .voucher-form { max-width: 34rem; }
 .voucher-form h2 { margin: 0; font-size: 1.25rem; }
+.voucher-list { margin-top: 1.5rem; }
+.voucher-list-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; }
+.voucher-list-heading h2, .voucher-list-heading p { margin: 0; }
+.voucher-list-heading p { color: #087f5b; font-weight: 800; }
+.voucher-items { display: grid; gap: 1rem; margin: 0; padding: 0; list-style: none; }
+.voucher-item { display: grid; gap: 0.75rem; padding: 1rem; border: 1px solid #d5e5dc; border-radius: 0.75rem; }
+.voucher-summary { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.5rem 1rem; }
+.voucher-barcode { max-width: 100%; overflow-x: auto; padding: 0.5rem; background: white; }
+.voucher-barcode svg { max-width: none; }
+.voucher-code { margin: 0; font-family: monospace; overflow-wrap: anywhere; }
+.voucher-used-toggle { display: flex; align-items: center; gap: 0.5rem; }
+.voucher-used-toggle input { width: auto; margin: 0; }
+@media (max-width: 480px) {
+  .voucher-list-heading { align-items: flex-start; flex-direction: column; }
+}

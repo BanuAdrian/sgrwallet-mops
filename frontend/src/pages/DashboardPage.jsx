@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import VoucherList from '../components/VoucherList';
 
 function calculateExpiryDate(issueDate) {
   if (!issueDate) {
@@ -31,6 +32,7 @@ function DashboardPage() {
   const [image, setImage] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [scanPreview, setScanPreview] = useState(null);
+  const [pendingVoucherId, setPendingVoucherId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -110,6 +112,26 @@ function DashboardPage() {
     }
   };
 
+  const markVoucherUsed = async (voucherId) => {
+    setMessage('');
+    setError('');
+    setPendingVoucherId(voucherId);
+    try {
+      const response = await api.patch(`/vouchers/${voucherId}/used`);
+      setVouchers((previous) => previous.map((item) => (
+        item.id === voucherId ? response.data : item
+      )));
+      setMessage('Bonul a fost marcat ca folosit.');
+    } catch (err) {
+      const serverMessage = err.response?.data?.message;
+      setError(serverMessage || `Bonul nu a putut fi marcat ca folosit${err.response
+        ? ` (HTTP ${err.response.status}).`
+        : '.'}`);
+    } finally {
+      setPendingVoucherId(null);
+    }
+  };
+
   return (
     <main className="page">
       <header className="topbar">
@@ -165,16 +187,11 @@ function DashboardPage() {
         </section>
 
         {vouchers.length > 0 && (
-          <section className="form-card" style={{ marginTop: '1.5rem' }}>
-            <h2>Bonuri salvate</h2>
-            <ul>
-              {vouchers.map((item, idx) => (
-                <li key={item.id ?? idx}>
-                  <strong>{item.storeName}</strong> — {item.voucherCode} ({item.amount} RON)
-                </li>
-              ))}
-            </ul>
-          </section>
+          <VoucherList
+            vouchers={vouchers}
+            onMarkUsed={markVoucherUsed}
+            pendingVoucherId={pendingVoucherId}
+          />
         )}
 
         <Link to="/" className="switch-link">Back to login</Link>

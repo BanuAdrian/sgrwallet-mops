@@ -1,8 +1,10 @@
 package ro.mops.sgrwallet.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
 import ro.mops.sgrwallet.dto.VoucherResponse;
 import ro.mops.sgrwallet.model.BusinessStore;
@@ -81,6 +83,23 @@ public class VoucherService {
                 .stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    @Transactional
+    public VoucherResponse markVoucherUsed(Long userId, Long voucherId) {
+        Voucher voucher = voucherRepository.findByIdAndUserIdForUpdate(voucherId, userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Bonul nu a fost gasit."
+                ));
+
+        if (voucher.isUsed()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Bonul a fost deja folosit.");
+        }
+
+        voucher.setUsed(true);
+        voucher.setUsedDate(clock.instant());
+        return toResponse(voucherRepository.save(voucher));
     }
 
     private void validateMandatoryFields(ManualVoucherRequest request) {
