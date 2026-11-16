@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
 import ro.mops.sgrwallet.dto.VoucherResponse;
+import ro.mops.sgrwallet.exception.DuplicateVoucherException;
 import ro.mops.sgrwallet.model.BusinessStore;
 import ro.mops.sgrwallet.model.User;
 import ro.mops.sgrwallet.model.Voucher;
@@ -61,11 +62,16 @@ public class VoucherService {
         validateMandatoryFields(request);
         Instant expiryInstant = parseAndValidateDates(request);
 
+        String normalizedCode = request.voucherCode().trim();
+        if (voucherRepository.existsByVoucherCodeIgnoreCase(normalizedCode)) {
+            throw new DuplicateVoucherException("Acest cod de bon exista deja in sistem.");
+        }
+
         User user = findUserOrThrow(userId);
         BusinessStore store = findOrCreateStore(request.storeName().trim());
 
         Voucher voucher = new Voucher();
-        voucher.setVoucherCode(request.voucherCode().trim());
+        voucher.setVoucherCode(normalizedCode);
         voucher.setValue(request.amount());
         voucher.setExpiryDate(expiryInstant);
         voucher.setUsed(false);
