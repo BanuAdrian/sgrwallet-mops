@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
 import ro.mops.sgrwallet.dto.VoucherResponse;
+import ro.mops.sgrwallet.exception.DuplicateVoucherException;
 import ro.mops.sgrwallet.model.BusinessStore;
 import ro.mops.sgrwallet.model.Role;
 import ro.mops.sgrwallet.model.User;
@@ -300,6 +301,51 @@ class VoucherServiceTest {
 
         assertEquals(HttpStatus.NOT_FOUND, exception.getStatusCode());
         verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-16: Respinge bonul inainte de salvare daca exista deja acelasi cod in baza de date")
+    void shouldRejectDuplicateVoucherCodeBeforeSaving() {
+        ManualVoucherRequest request = new ManualVoucherRequest(
+                "SGR-987654321",
+                "Kaufland",
+                new BigDecimal("15.50"),
+                "2026-03-10",
+                "2026-12-31"
+        );
+
+        when(voucherRepository.existsByVoucherCodeIgnoreCase("SGR-987654321")).thenReturn(true);
+
+        DuplicateVoucherException ex = assertThrows(
+                DuplicateVoucherException.class,
+                () -> voucherService.addManualVoucher(1L, request)
+        );
+
+        assertTrue(ex.getMessage().toLowerCase().contains("exista deja"));
+        verify(voucherRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("US-16: Detecteaza bonul dublat chiar daca are spatii la capete sau litere cu alta capitalizare")
+    void shouldRejectDuplicateVoucherCodeWithWhitespaceOrDifferentCase() {
+        ManualVoucherRequest request = new ManualVoucherRequest(
+                "  sgr-987654321  ",
+                "Lidl",
+                new BigDecimal("10.00"),
+                "2026-03-10",
+                "2026-12-31"
+        );
+
+        when(voucherRepository.existsByVoucherCodeIgnoreCase("sgr-987654321")).thenReturn(true);
+
+        DuplicateVoucherException ex = assertThrows(
+                DuplicateVoucherException.class,
+                () -> voucherService.addManualVoucher(1L, request)
+        );
+
+        assertTrue(ex.getMessage().toLowerCase().contains("cod"));
+        verify(voucherRepository, never()).save(any());
+        verifyNoInteractions(businessStoreRepository);
     }
 
     private Voucher createVoucher(boolean used) {

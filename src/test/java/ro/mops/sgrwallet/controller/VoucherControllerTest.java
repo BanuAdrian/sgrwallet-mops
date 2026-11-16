@@ -8,8 +8,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import ro.mops.sgrwallet.dto.AuthDtos.MessageResponse;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
 import ro.mops.sgrwallet.dto.VoucherResponse;
+import ro.mops.sgrwallet.exception.DuplicateVoucherException;
 import ro.mops.sgrwallet.model.VoucherSource;
 import ro.mops.sgrwallet.service.VoucherService;
 
@@ -105,5 +107,18 @@ class VoucherControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertTrue(response.getBody().used());
+    }
+
+    @Test
+    @DisplayName("US-16: ApiExceptionHandler returneaza 409 Conflict si mesaj clar pentru bon dublat")
+    void shouldReturnConflictWithClearMessageWhenDuplicateVoucher() {
+        ApiExceptionHandler handler = new ApiExceptionHandler();
+        DuplicateVoucherException ex = new DuplicateVoucherException("Acest cod de bon exista deja in sistem.");
+
+        ResponseEntity<MessageResponse> response = handler.handleDuplicateVoucher(ex);
+
+        assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Acest cod de bon exista deja in sistem.", response.getBody().message());
     }
 }

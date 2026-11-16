@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import ro.mops.sgrwallet.dto.ManualVoucherRequest;
 import ro.mops.sgrwallet.dto.VoucherResponse;
+import ro.mops.sgrwallet.exception.DuplicateVoucherException;
 import ro.mops.sgrwallet.model.BusinessStore;
 import ro.mops.sgrwallet.model.User;
 import ro.mops.sgrwallet.model.Voucher;
@@ -29,6 +30,7 @@ import java.util.UUID;
 @Service
 public class VoucherService {
 
+    private static final String DUPLICATE_VOUCHER_MESSAGE = "Acest cod de bon exista deja in sistem.";
     private static final List<DateTimeFormatter> STRICT_DATE_FORMATTERS = List.of(
             DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT),
             DateTimeFormatter.ofPattern("dd-MM-uuuu").withResolverStyle(ResolverStyle.STRICT)
@@ -61,11 +63,14 @@ public class VoucherService {
         validateMandatoryFields(request);
         Instant expiryInstant = parseAndValidateDates(request);
 
+        String normalizedCode = request.voucherCode().trim();
+        ensureVoucherCodeIsUnique(normalizedCode);
+
         User user = findUserOrThrow(userId);
         BusinessStore store = findOrCreateStore(request.storeName().trim());
 
         Voucher voucher = new Voucher();
-        voucher.setVoucherCode(request.voucherCode().trim());
+        voucher.setVoucherCode(normalizedCode);
         voucher.setValue(request.amount());
         voucher.setExpiryDate(expiryInstant);
         voucher.setUsed(false);
@@ -117,6 +122,12 @@ public class VoucherService {
         }
         if (request.expiresAt() == null || request.expiresAt().isBlank()) {
             throw new IllegalArgumentException("Data expirarii este obligatorie.");
+        }
+    }
+
+    private void ensureVoucherCodeIsUnique(String normalizedVoucherCode) {
+        if (voucherRepository.existsByVoucherCodeIgnoreCase(normalizedVoucherCode)) {
+            throw new DuplicateVoucherException(DUPLICATE_VOUCHER_MESSAGE);
         }
     }
 

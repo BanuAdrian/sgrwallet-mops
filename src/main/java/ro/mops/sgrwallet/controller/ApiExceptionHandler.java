@@ -8,9 +8,16 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 import ro.mops.sgrwallet.dto.AuthDtos.MessageResponse;
+import ro.mops.sgrwallet.exception.DuplicateVoucherException;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    @ExceptionHandler(DuplicateVoucherException.class)
+    public ResponseEntity<MessageResponse> handleDuplicateVoucher(DuplicateVoucherException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new MessageResponse(exception.getMessage()));
+    }
+
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<MessageResponse> handleStatus(ResponseStatusException exception) {
         return ResponseEntity.status(exception.getStatusCode())
