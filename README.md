@@ -50,6 +50,9 @@ Use **View OCR logs** in the same list to open a live terminal with OCR logs.
 Alternatively, open **Terminal → Run Task** and select **start-full-stack**.
 This starts PostgreSQL, the local OCR service and the frontend.
 
+Project planning, the Gantt baseline and the requirements traceability matrix
+are documented in [`PROJECT_PLANNING.md`](PROJECT_PLANNING.md).
+
 The test tasks are also available from **Terminal → Run Task**:
 
 - `run-all-tests` runs Java, frontend and OCR tests;

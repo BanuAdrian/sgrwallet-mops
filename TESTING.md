@@ -19,7 +19,7 @@ This document describes the testing approach used for Check-in 2.
 - [Registration returns HTTP 201](src/test/java/ro/mops/sgrwallet/controller/AuthControllerTest.java#L29)
 - [Login returns the authentication response](src/test/java/ro/mops/sgrwallet/controller/AuthControllerTest.java#L40)
 
-**[`VoucherServiceTest`](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java) (11 tests)**
+**[`VoucherServiceTest`](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java) (13 tests)**
 
 - [Valid manual voucher persistence](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L55)
 - [Required voucher code validation](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L85)
@@ -32,16 +32,19 @@ This document describes the testing approach used for Check-in 2.
 - [Marking an active voucher as used](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L264)
 - [Rejecting repeated use](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L278)
 - [Rejecting another user's voucher](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L293)
+- [Rejecting a duplicate voucher code](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L308)
+- [Rejecting a duplicate code with whitespace or different case](src/test/java/ro/mops/sgrwallet/service/VoucherServiceTest.java#L330)
 
-**[`VoucherControllerTest`](src/test/java/ro/mops/sgrwallet/controller/VoucherControllerTest.java) (3 tests)**
+**[`VoucherControllerTest`](src/test/java/ro/mops/sgrwallet/controller/VoucherControllerTest.java) (4 tests)**
 
 - [Add voucher returns HTTP 201](src/test/java/ro/mops/sgrwallet/controller/VoucherControllerTest.java#L38)
 - [List vouchers returns HTTP 200](src/test/java/ro/mops/sgrwallet/controller/VoucherControllerTest.java#L68)
 - [Mark used returns HTTP 200](src/test/java/ro/mops/sgrwallet/controller/VoucherControllerTest.java#L90)
+- [Duplicate voucher returns HTTP 409](src/test/java/ro/mops/sgrwallet/controller/VoucherControllerTest.java#L114)
 
 ### Frontend (React / Vitest)
 
-**[`DashboardPage.test.jsx`](frontend/src/pages/DashboardPage.test.jsx) (3 tests)**
+**[`DashboardPage.test.jsx`](frontend/src/pages/DashboardPage.test.jsx) (4 tests)**
 
 - [Barcode rendering and available balance](frontend/src/pages/DashboardPage.test.jsx#L45)
 - [Used state and balance deduction](frontend/src/pages/DashboardPage.test.jsx#L56)
@@ -63,8 +66,8 @@ This document describes the testing approach used for Check-in 2.
 - [Reject non-image upload with HTTP 400](ocr-service/tests/test_api.py#L10)
 - [Return extracted fields from scan API](ocr-service/tests/test_api.py#L18)
 
-These tests cover the acceptance criteria for US-01A, US-01B, US-04, US-05A,
-US-05B and US-08.
+These tests cover the acceptance criteria for US-01A, US-01B, US-04, US-16,
+US-05A, US-05B and US-08.
 
 ## Test tools
 
