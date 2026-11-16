@@ -84,4 +84,26 @@ class VoucherControllerTest {
         assertNotNull(response.getBody());
         assertEquals(1, response.getBody().size());
     }
+
+    @Test
+    @DisplayName("US-08: PATCH /api/vouchers/{id}/used returneaza bonul marcat ca folosit")
+    void shouldMarkVoucherUsed() {
+        VoucherResponse expected = new VoucherResponse(
+                10L,
+                "SGR-777888",
+                "Lidl",
+                new BigDecimal("14.00"),
+                Instant.parse("2026-12-31T23:59:59Z"),
+                Instant.parse("2026-03-15T10:00:00Z"),
+                true,
+                VoucherSource.MANUAL
+        );
+        when(voucherService.markVoucherUsed(1L, 10L)).thenReturn(expected);
+
+        ResponseEntity<VoucherResponse> response = voucherController.markVoucherUsed(1L, 10L);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertTrue(response.getBody().used());
+    }
 }
