@@ -4,6 +4,8 @@ frontend/dist/
 frontend/node_modules/
 frontend/.vite/
 coverage/
+htmlcov/
+test-results/
 ocr-service/.venv/
 **/__pycache__/
 **/.pytest_cache/
@@ -43,3 +45,6 @@ Thumbs.db
 !.vscode/launch.json
 !.vscode/extensions.json
 !.vscode/ensure-docker.ps1
+!.vscode/run-all-coverage.ps1
+!.vscode/open-coverage-reports.ps1
+!.vscode/run-all-tests-report.ps1

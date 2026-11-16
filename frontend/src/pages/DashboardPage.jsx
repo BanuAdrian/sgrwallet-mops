@@ -8,12 +8,12 @@ function calculateExpiryDate(issueDate) {
     return '';
   }
 
-  const expiryDate = new Date(`${issueDate}T00:00:00`);
+  const expiryDate = new Date(`${issueDate}T00:00:00Z`);
   if (Number.isNaN(expiryDate.getTime())) {
     return '';
   }
 
-  expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+  expiryDate.setUTCFullYear(expiryDate.getUTCFullYear() + 1);
   return expiryDate.toISOString().slice(0, 10);
 }
 
@@ -90,6 +90,15 @@ function DashboardPage() {
     navigate('/', { replace: true });
   };
 
+  const updateIssuedAt = (event) => {
+    const issuedAt = event.target.value;
+    setVoucher((previous) => ({
+      ...previous,
+      issuedAt,
+      expiresAt: calculateExpiryDate(issuedAt)
+    }));
+  };
+
   const addVoucher = async (event) => {
     event.preventDefault();
     setMessage('');
@@ -159,7 +168,7 @@ function DashboardPage() {
           <label>
             Data emiterii
             <input type="date" name="issuedAt" value={voucher.issuedAt}
-              onChange={(event) => setVoucher({ ...voucher, issuedAt: event.target.value })} />
+              onChange={updateIssuedAt} />
           </label>
           <label>
             Data expirării *

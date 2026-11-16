@@ -18,6 +18,76 @@
             "request": "launch",
             "command": "docker compose logs -f ocr-service",
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run all tests",
+            "request": "launch",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command \"mvn test; if (`$LASTEXITCODE -eq 0) { Push-Location frontend; npm test; Pop-Location }; if (`$LASTEXITCODE -eq 0) { Push-Location ocr-service; python -m pytest -q; Pop-Location }\"",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run backend tests",
+            "request": "launch",
+            "command": "mvn test",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run backend coverage",
+            "request": "launch",
+            "command": "mvn verify",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run frontend tests",
+            "request": "launch",
+            "command": "npm test",
+            "cwd": "${workspaceFolder}\\frontend"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run frontend coverage",
+            "request": "launch",
+            "command": "npm run test:coverage",
+            "cwd": "${workspaceFolder}\\frontend"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run OCR tests",
+            "request": "launch",
+            "command": "python -m pytest -q",
+            "cwd": "${workspaceFolder}\\ocr-service"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run OCR coverage",
+            "request": "launch",
+            "command": "python -m pytest --cov=app --cov-report=term-missing --cov-report=html",
+            "cwd": "${workspaceFolder}\\ocr-service"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run all coverage and open reports",
+            "request": "launch",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\run-all-coverage.ps1\"",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Open coverage reports",
+            "request": "launch",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\open-coverage-reports.ps1\"",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "type": "node-terminal",
+            "name": "Run all tests and open report",
+            "request": "launch",
+            "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\run-all-tests-report.ps1\"",
+            "cwd": "${workspaceFolder}"
         }
     ]
 }

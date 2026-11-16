@@ -69,4 +69,59 @@ describe('DashboardPage voucher usage', () => {
       name: `Marchează bonul ${activeVoucher.voucherCode} ca folosit`
     })).toBeChecked();
   });
+
+  it('fills editable confirmation fields from OCR and confirms the corrected voucher', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        barcode_number: '98000020015000551623',
+        store_name: 'Carrefour',
+        voucher_value: 1.5,
+        print_date: '2025-05-10',
+        raw_text: 'receipt text'
+      })
+    });
+    api.post.mockResolvedValue({
+      data: {
+        id: 2,
+        storeName: 'Carrefour',
+        voucherCode: '98000020015000551623',
+        amount: 2,
+        used: false
+      }
+    });
+
+    renderDashboard();
+    const file = new File(['receipt'], 'receipt.jpg', { type: 'image/jpeg' });
+    fireEvent.change(document.querySelector('input[type="file"]'), { target: { files: [file] } });
+    fireEvent.click(screen.getByRole('button', { name: 'Scan with OCR' }));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue('Carrefour')).toBeInTheDocument();
+      expect(screen.getByDisplayValue('2026-05-10')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByDisplayValue('1.5'), { target: { value: '2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Confirmă voucherul' }));
+
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/vouchers', expect.objectContaining({
+        storeName: 'Carrefour',
+        voucherCode: '98000020015000551623',
+        amount: '2',
+        expiresAt: '2026-05-10',
+        source: 'OCR'
+      }));
+    });
+  });
+
+  it('calculates expiry one year after a manually entered issue date', () => {
+    renderDashboard();
+
+    fireEvent.change(document.querySelector('input[name="issuedAt"]'), {
+      target: { value: '2026-03-15' }
+    });
+
+    expect(screen.getByDisplayValue('2027-03-15')).toBeInTheDocument();
+  });
 });
