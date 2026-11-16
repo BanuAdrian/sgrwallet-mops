@@ -30,6 +30,7 @@ import java.util.UUID;
 @Service
 public class VoucherService {
 
+    private static final String DUPLICATE_VOUCHER_MESSAGE = "Acest cod de bon exista deja in sistem.";
     private static final List<DateTimeFormatter> STRICT_DATE_FORMATTERS = List.of(
             DateTimeFormatter.ofPattern("uuuu-MM-dd").withResolverStyle(ResolverStyle.STRICT),
             DateTimeFormatter.ofPattern("dd-MM-uuuu").withResolverStyle(ResolverStyle.STRICT)
@@ -63,9 +64,7 @@ public class VoucherService {
         Instant expiryInstant = parseAndValidateDates(request);
 
         String normalizedCode = request.voucherCode().trim();
-        if (voucherRepository.existsByVoucherCodeIgnoreCase(normalizedCode)) {
-            throw new DuplicateVoucherException("Acest cod de bon exista deja in sistem.");
-        }
+        ensureVoucherCodeIsUnique(normalizedCode);
 
         User user = findUserOrThrow(userId);
         BusinessStore store = findOrCreateStore(request.storeName().trim());
@@ -123,6 +122,12 @@ public class VoucherService {
         }
         if (request.expiresAt() == null || request.expiresAt().isBlank()) {
             throw new IllegalArgumentException("Data expirarii este obligatorie.");
+        }
+    }
+
+    private void ensureVoucherCodeIsUnique(String normalizedVoucherCode) {
+        if (voucherRepository.existsByVoucherCodeIgnoreCase(normalizedVoucherCode)) {
+            throw new DuplicateVoucherException(DUPLICATE_VOUCHER_MESSAGE);
         }
     }
 

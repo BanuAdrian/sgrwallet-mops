@@ -115,26 +115,10 @@ class VoucherControllerTest {
         ApiExceptionHandler handler = new ApiExceptionHandler();
         DuplicateVoucherException ex = new DuplicateVoucherException("Acest cod de bon exista deja in sistem.");
 
-        ResponseEntity<MessageResponse> response = getDuplicateVoucherResponse(handler, ex);
+        ResponseEntity<MessageResponse> response = handler.handleDuplicateVoucher(ex);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertNotNull(response.getBody());
         assertEquals("Acest cod de bon exista deja in sistem.", response.getBody().message());
-    }
-
-    private ResponseEntity<MessageResponse> getDuplicateVoucherResponse(
-            ApiExceptionHandler handler,
-            DuplicateVoucherException ex) {
-        try {
-            var method = ApiExceptionHandler.class.getDeclaredMethod("handleDuplicateVoucher", DuplicateVoucherException.class);
-            @SuppressWarnings("unchecked")
-            ResponseEntity<MessageResponse> res = (ResponseEntity<MessageResponse>) method.invoke(handler, ex);
-            return res;
-        } catch (NoSuchMethodException e) {
-            fail("ApiExceptionHandler nu trateaza inca DuplicateVoucherException");
-            return null;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 }
