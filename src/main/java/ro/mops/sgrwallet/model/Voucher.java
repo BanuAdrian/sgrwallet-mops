@@ -43,7 +43,7 @@ public class Voucher {
     @Column(nullable = false, length = 20)
     private VoucherSource source = VoucherSource.MANUAL;
 
-    protected Voucher() {
+    public Voucher() {
     }
 
     @PrePersist

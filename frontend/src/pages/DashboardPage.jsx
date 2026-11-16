@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -21,14 +21,23 @@ function DashboardPage() {
     storeName: '',
     voucherCode: '',
     amount: '',
+    issuedAt: '',
     expiresAt: ''
   });
   const [voucherSource, setVoucherSource] = useState('MANUAL');
+  const [vouchers, setVouchers] = useState([]);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
   const [image, setImage] = useState(null);
   const [scanning, setScanning] = useState(false);
   const [scanPreview, setScanPreview] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    api.get('/vouchers')
+      .then((response) => setVouchers(response.data || []))
+      .catch(() => {});
+  }, []);
 
   const scanVoucher = async () => {
     if (!image) {
@@ -58,6 +67,7 @@ function DashboardPage() {
         storeName: data.store_name || '',
         voucherCode: data.barcode_number || '',
         amount: data.voucher_value ?? '',
+        issuedAt: data.print_date || '',
         expiresAt: calculateExpiryDate(data.print_date)
       });
       setVoucherSource('OCR');
@@ -69,7 +79,7 @@ function DashboardPage() {
       clearTimeout(timeout);
       setScanning(false);
     }
-  const navigate = useNavigate();
+  };
 
   const signOut = () => {
     localStorage.removeItem('sgr_token');
@@ -83,12 +93,20 @@ function DashboardPage() {
     setMessage('');
     setError('');
     try {
-      await api.post('/vouchers', { ...voucher, source: voucherSource });
-      setMessage('Voucher added.');
-      setVoucher({ storeName: '', voucherCode: '', amount: '', expiresAt: '' });
+      const response = await api.post('/vouchers', { ...voucher, source: voucherSource });
+      setMessage('Bonul a fost adaugat cu succes.');
+      setVouchers((prev) => [response.data, ...prev]);
+      setVoucher({ storeName: '', voucherCode: '', amount: '', issuedAt: '', expiresAt: '' });
       setVoucherSource('MANUAL');
-    } catch {
-      setError('Voucher could not be added. The backend endpoint may not be implemented yet.');
+    } catch (err) {
+      const serverMessage = err.response?.data?.message;
+      if (serverMessage) {
+        setError(serverMessage);
+      } else if (!err.response) {
+        setError('Serverul backend (http://localhost:8080) nu raspunde. Asigura-te ca PostgreSQL si Spring Boot sunt pornite.');
+      } else {
+        setError(`Bonul nu a putut fi adaugat (HTTP ${err.response.status}).`);
+      }
     }
   };
 
@@ -117,6 +135,11 @@ function DashboardPage() {
               onChange={(event) => setVoucher({ ...voucher, amount: event.target.value })} />
           </label>
           <label>
+            Data emiterii
+            <input type="date" name="issuedAt" value={voucher.issuedAt}
+              onChange={(event) => setVoucher({ ...voucher, issuedAt: event.target.value })} />
+          </label>
+          <label>
             Data expirării *
             <input type="date" required name="expiresAt" value={voucher.expiresAt}
               onChange={(event) => setVoucher({ ...voucher, expiresAt: event.target.value })} />
@@ -129,6 +152,7 @@ function DashboardPage() {
           </label>
           <button>{voucherSource === 'OCR' ? 'Confirmă voucherul' : 'Adaugă voucher'}</button>
         </form>
+
         <section className="form-card voucher-form">
           <h2>Scan voucher image</h2>
           <p className="muted">OCR fills the fields below. Review and correct them before saving.</p>
@@ -139,6 +163,20 @@ function DashboardPage() {
           </button>
           {scanPreview && <p className="success">Review the extracted values, then add the voucher.</p>}
         </section>
+
+        {vouchers.length > 0 && (
+          <section className="form-card" style={{ marginTop: '1.5rem' }}>
+            <h2>Bonuri salvate</h2>
+            <ul>
+              {vouchers.map((item, idx) => (
+                <li key={item.id ?? idx}>
+                  <strong>{item.storeName}</strong> — {item.voucherCode} ({item.amount} RON)
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
         <Link to="/" className="switch-link">Back to login</Link>
       </section>
     </main>
