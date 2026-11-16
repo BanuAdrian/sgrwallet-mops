@@ -2,6 +2,15 @@
   "version": "2.0.0",
   "tasks": [
     {
+      "label": "ensure-docker",
+      "type": "shell",
+      "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"${workspaceFolder}\\.vscode\\ensure-docker.ps1\"",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "start-postgres",
       "type": "shell",
       "command": "docker compose up -d postgres",
@@ -21,8 +30,9 @@
     },
     {
       "label": "start-dev-services",
-      "dependsOrder": "parallel",
+      "dependsOrder": "sequence",
       "dependsOn": [
+        "ensure-docker",
         "start-postgres",
         "start-ocr"
       ],

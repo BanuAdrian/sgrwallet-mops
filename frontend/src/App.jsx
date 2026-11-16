@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import PropTypes from 'prop-types';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DashboardPage from './pages/DashboardPage';
@@ -17,5 +18,9 @@ function App() {
     </Routes>
   );
 }
+
+ProtectedRoute.propTypes = {
+  children: PropTypes.node.isRequired
+};
 
 export default App;
